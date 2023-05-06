@@ -61,10 +61,14 @@ def update_jobs_out(click, value):
     
     _, ids = skill_list(value)
     job_cat = predict_job(ids)
+    if job_cat[0][0] < 0.05:
+        return dcc.Loading(children=html.H3("Sorry, no job matches your courses"))
+    
     children.append(html.H3("Job Category Predicted:"))
     children.append(html.H4(job_cat[0][1], style={
         "color": "#2186f4",
         "font-family": "Arial, Helvetica, sans-serif"}))
+
     children.append(html.H3("Top 10 jobs from category:"))
     
     jobs = get_job_list(ids, job_cat[0][1])
