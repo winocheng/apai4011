@@ -7,6 +7,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 def course_list():
+    """
+    Output:
+        list of course codes
+    """
     if(os.path.exists("UST_Course_skilled.pkl")):
         courses = pd.read_pickle("UST_Course_skilled.pkl")
         return list(courses.index.values)
@@ -15,6 +19,13 @@ def course_list():
         
 
 def skill_list(courses):
+    """
+    Input:
+        courses: list of string of course code
+    Output:
+        list of skill names,
+        list of skill ids
+    """
     if(os.path.exists("UST_Course_skilled.pkl")):
         course_skills = pd.read_pickle("UST_Course_skilled.pkl")
         ids = [item['id'] for item in list(itertools.chain.from_iterable(list(course_skills.loc[courses]["skills"])))]
@@ -25,6 +36,14 @@ def skill_list(courses):
         raise Exception("Course file doesn't exist")
         
 def get_job_list(skillids, category, vectorizer=pickle.load(open("vectorizer.pkl", "rb"))):
+    """
+    input:
+        skillids: list of skill IDs,
+        category: string of the job category,
+        vectorizer: fitted vectorizer
+    output:
+        list of string of top 10 similarity jobs titles within category
+    """
     labels = df_job_label = pd.read_csv("job_label.csv",index_col=0)
     ids = df_job_label[df_job_label["Label"] == category].index.values
     
@@ -37,14 +56,14 @@ def get_job_list(skillids, category, vectorizer=pickle.load(open("vectorizer.pkl
     return filtered.sort_values(by="score", ascending=False).iloc[:10]["Title"]
     
 
-def cosim(skillids):
-    if(os.path.exists("job_preprocessed.parquet")):
-        jobs = pd.read_parquet('job_preprocessed.parquet')
-        return jobs.loc[[92, 179, 232, 233, 303, 413, 476, 514, 639, 850], "Title"]
-    else:
-        raise Exception("Job file dosen't exist")
-        
+    
 def get_job_skills(idx):
+    """
+    input:
+        idx: job id
+    output:
+        list of skills extracted from that job
+    """
     if(os.path.exists('job_skilled.pkl')):
         jobskills = pd.read_pickle('job_skilled.pkl')
         job = jobskills.loc[idx]
@@ -60,7 +79,7 @@ def predict_job(skill_list,vectorizer=pickle.load(open("vectorizer.pkl", "rb")),
     """
     Input:
         skill_list: list of skill IDs,
-        vectorizer: fitted tf-idf vectorizer
+        vectorizer: fitted vectorizer,
         df_job: job dataframe with labels and tf-idf vectors
     Output:
         vec_output_list: sorted list of tuple with (cos_sim and label)

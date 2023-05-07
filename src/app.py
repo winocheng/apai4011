@@ -1,3 +1,5 @@
+# run "python app.py" in terminal and open the link outputed in browser to use the dashboard
+
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
 from course import *
@@ -7,6 +9,7 @@ server = app.server
 
 COURSES = course_list()
 
+# define the basic layout of the dashboard
 app.layout = html.Div([
     html.Div([
         html.H3("Select Your Course(s):"),
@@ -31,7 +34,7 @@ app.layout = html.Div([
     html.Div(id='jobs-output',style={'width': '40%', 'float':'left'})
 ])
 
-
+# extract and display list of skills from user selected courses
 @app.callback(
     Output('course-output', 'children'),
     Output('submit-course', 'disabled'),
@@ -46,11 +49,13 @@ def update_course_out(value):
         if skills:
             for skill in skills:
                 outlist.append(html.P(skill))
+    # disable submit button if the list of courses selected is empty
     else:
         disabled = True
     return html.Div(outlist), disabled
 
 
+# predict and display jobs when the user the submit button
 @app.callback(
     Output('jobs-output', 'children'),
     Input('submit-course', 'n_clicks'),
@@ -61,6 +66,8 @@ def update_jobs_out(click, value):
     
     _, ids = skill_list(value)
     job_cat = predict_job(ids)
+    
+    # low confidence case
     if job_cat[0][0] < 0.05:
         return dcc.Loading(children=html.H3("Sorry, no job matches your courses"))
     
@@ -77,6 +84,7 @@ def update_jobs_out(click, value):
     
     return dcc.Loading(children=children)
 
+# extract skill from job selected by the user
 @app.callback(
     Output('tbl_out', 'children'), 
     Input('tbl', 'active_cell'),
